@@ -1,14 +1,13 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-//#define INT 0;
-//#define STRING 1;
-//#define BOOL 2;
-//#define ARRAY 3;
+#include <stdlib.h >
+
 using namespace std;
 
-int i, j=0, k=0, l=0,n=0, t = 0, state = 0;
+int i, j=0, k=0, l=0,n=0, t = 0, state = 0,random;
 int p1[100], p2[100], p3[100] = { 0 };
+int range_int[100] = { 0 };
 
 class Model
 {
@@ -20,22 +19,26 @@ public:
 	}
 	void solve()
 	{
-
 		for (int i = 0; i < _len; i++)
 		{
 			if (_c[i] == '{')
 				cout << _c[i] << endl;
-			else if (_c[i] == ',' && _c[i - 1] == '"')
-				cout << _c[i] << endl;
-			else if (_c[i] == ':' && _c[i + 1] == '"')
+			if (_c[i] == ',' && _c[i - 1] == '"')
+				cout << ',' << endl;
+			if (_c[i] == ':' && _c[i + 1] == '"')
 			{
-				cout << ':' << '"';
+				cout << ':';
 				if (_c[i + 2] == 'i')
 					Int(i + 2);
 				/*if ( _c[i + 2] == 's')
-					String();
+					String(i+2);*/
 				if (_c[i + 2] == 'b')
-					Bool();*/
+					Bool(i+2);
+				for (i+=2;i < _len;i++)
+				{
+					if (_c[i] == '"')
+						break;
+				}
 			}
 			/*else if (_c[i] == ':' && _c[i + 1] == '[')
 					Array();*/
@@ -45,39 +48,74 @@ public:
 	}
 	void Int(int p)
 	{
-		int begin=0,end=0;
-		int range_int[10] = { 0 };
+		
 		int len = 0;
+		int n=0,temp=0;
+		int value = 0;
 		if (_c[p + 3] == '(')
 		{
-			t = p + 3;
+			t = p + 4;
 			i = 0;
-			while (_c[t++] != ')')
-				len++;
-			while(_c[t++]!='"')
+			while (_c[t] != ')')
 			{
-				if (_c[t + 1] == ',')
+				while (_c[t] != ',' && _c[t] != '-' && _c[t] !=')' )
 				{
-					range_int[i++] = _c[t] - '0';
+					temp *= 10;//0  20
+					n = _c[t] - '0';
+					temp += n;//2  23
+					t += 1;
 				}
-				if (_c[t + 1] == '-')
-				{
-					begin =_c[t] - '0';
-					range_int[i++] = begin ;
-					end = _c[t + 2] - '0';
-					for (;i < (end - begin);i++)
-						range_int[i] = ++begin;
-				}
-					
+				range_int[i++] = temp;
 
+				if (_c[t] == ',')
+					t += 1;
+
+				else if (_c[t] == '-')
+				{
+					t += 1;
+					temp = 0;
+					while (_c[t] != ','  && _c[t] != ')')
+					{
+						temp *= 10;//0  20
+						n = _c[t] - '0';
+						temp += n;//2  23
+						t++;
+					}
+					value = temp - range_int[i-1];//i=3
+					for (;value>0;i++)
+					{
+						range_int[i] = range_int[i - 1] + 1;
+						value--;
+					}
+				}
+				state = 0;
+				temp = 0;
 			}
+		}
+		srand(time(0));
+		random = rand() % (i-1);//i=7
+		cout << range_int[random];//3,4,5,6,7,8,9
+	}
+
+	void String(int p)
+	{
+		if (_c[p + 6] == '(')
+		{
+
 
 		}
-		
-
 	}
-	void String();
-	void Bool();
+
+	void Bool(int p)
+	{
+		string s1 = "true";
+		string s2 = "false";
+		random = rand() % 1 + 1;
+		if (random == 1)
+			cout << s1;
+		else
+			cout << s2;
+	}
 	void Array();
 private:
 	char* _c;
@@ -100,8 +138,6 @@ int main()
 	ifs >> c[0];
 	while (!ifs.eof())
 		ifs >> c[i++];
-	/*for (int j = 0; j < i - 1; j++)
-		cout << c[j];*/
 	if (c[0] != '{' || c[i - 2] != '}')
 	{
 		cout << "json模板不符合格式" << endl;
